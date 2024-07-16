@@ -7,32 +7,92 @@
     <title>Documentation</title>
 </head>
 
-<body>
+<body style="margin: 50px">
     <h1>Introduction</h1>
     <p>
         Movie API will provide users with access to information about different
         movies, directors and genres. Users will be able to sign up, update
         their personal information and create a list of their favorite movies.
     </p>
-    <h1>Getting Started</h1>
-    <p>
-        To get started with Movie API, it is essential to have a solid foundation of JavaScript as well as some basic familiarity with the command line.
-    </p>
-    <h2>Dependencies</h2>
-    <h3>Local Dependencies</h3>
+
+    <h1>Dependencies</h1>
+    <h2 style="margin-left: 20px;">Local Dependencies</h2>
     <ul>
         <li>Body Parser</li>
         <li>Express</li>
         <li>Lodash</li>
         <li>UUID</li>
     </ul>
-    <h3>Development Dependencies</h3>
+
+    <h2 style="margin-left: 20px;">Development Dependencies</h2>
     <ul>
         <li>ESLint</li>
         <li>Morgan</li>
         <li>Nodemon</li>
     </ul>
-    <h1>URL Endpoints and Request Methods</h1>
+
+    <h1>API Endpoints</h1>
+    <div>
+        <table cellpadding="15" cellspacing="0"
+            style="border: 3px solid #cbe896; border-radius: 5px; margin: 0 auto;">
+            <thead>
+                <tr>
+                    <th>Request Method</th>
+                    <th>URL</th>
+                    <th>Response</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #cbe896;">
+                    <td><code>GET</code></td>
+                    <td>/movies</td>
+                    <td>List of all movies</td>
+                </tr>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td>/movies/:title</td>
+                    <td>Data about a movie by title</td>
+                </tr>
+                <tr style="background-color: #cbe896;">
+                    <td><code>GET</code></td>
+                    <td>/genres/:name</td>
+                    <td>Data about a genre by type</td>
+                </tr>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td>/directors/:name</td>
+                    <td>Data about a director by name</td>
+                </tr>
+                <tr style="background-color: #cbe896;">
+                    <td><code>POST</code></td>
+                    <td>/users</td>
+                    <td>Allow new users to register</td>
+                </tr>
+                <tr>
+                    <td><code>PUT</code></td>
+                    <td>/users/:username</td>
+                    <td>Allow users to update their user id</td>
+                </tr>
+                <tr style="background-color: #cbe896;">
+                    <td><code>POST</code></td>
+                    <td>/users/:username/favorites/:title</td>
+                    <td>Allow users to add a movie to their favorites</td>
+                </tr>
+                <tr>
+                    <td><code>DELETE</code></td>
+                    <td>/users/:username/favorites/:title</td>
+                    <td>Allow users to remove a movie from their favorites</td>
+                </tr>
+                <tr style="background-color: #cbe896;">
+                    <td><code>DELETE</code></td>
+                    <td>/users/:username</td>
+                    <td>Allow existing users to deregister</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div>
+    </div>
 </body>
 
 </html>
