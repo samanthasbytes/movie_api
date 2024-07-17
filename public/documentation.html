@@ -1,98 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation</title>
-</head>
+    <style>
+        body {
+            color:#4d5057;
+        }
 
-<body style="margin: 50px">
+        th, td {
+            text-align: left;
+            vertical-align: text-top;
+            border: 1px solid #87bba2;
+        }
+        td {
+            font-size: 12px;;
+        }
+        th {
+            font-size: 14px;
+        }
+    </style>
+  </head>
+
+  <body style="margin: 50px; font-family: Arial, Helvetica, sans-serif;">
     <h1>Introduction</h1>
     <p>
-        Movie API will provide users with access to information about different
-        movies, directors and genres. Users will be able to sign up, update
-        their personal information and create a list of their favorite movies.
+      Movie API will provide users with access to information about different
+      movies, directors and genres. Users will be able to sign up, update their
+      personal information and create a list of their favorite movies.
     </p>
 
     <h1>Dependencies</h1>
-    <h2 style="margin-left: 20px;">Local Dependencies</h2>
+    <h2>Local Dependencies</h2>
     <ul>
-        <li>Body Parser</li>
-        <li>Express</li>
-        <li>Lodash</li>
-        <li>UUID</li>
+      <li>Body Parser</li>
+      <li>Express</li>
+      <li>Lodash</li>
+      <li>UUID</li>
     </ul>
 
-    <h2 style="margin-left: 20px;">Development Dependencies</h2>
+    <h2>Development Dependencies</h2>
     <ul>
-        <li>ESLint</li>
-        <li>Morgan</li>
-        <li>Nodemon</li>
+      <li>ESLint</li>
+      <li>Morgan</li>
+      <li>Nodemon</li>
     </ul>
 
     <h1>API Endpoints</h1>
-    <div>
-        <table cellpadding="15" cellspacing="0"
-            style="border: 3px solid #cbe896; border-radius: 5px; margin: 0 auto;">
-            <thead>
-                <tr>
-                    <th>Request Method</th>
-                    <th>URL</th>
-                    <th>Response</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="background-color: #cbe896;">
-                    <td><code>GET</code></td>
-                    <td>/movies</td>
-                    <td>List of all movies</td>
-                </tr>
-                <tr>
-                    <td><code>GET</code></td>
-                    <td>/movies/:title</td>
-                    <td>Data about a movie by title</td>
-                </tr>
-                <tr style="background-color: #cbe896;">
-                    <td><code>GET</code></td>
-                    <td>/movies/genres/:genreType</td>
-                    <td>Data about a genre by type</td>
-                </tr>
-                <tr>
-                    <td><code>GET</code></td>
-                    <td>/movies/directors/:directorName</td>
-                    <td>Data about a director by name</td>
-                </tr>
-                <tr style="background-color: #cbe896;">
-                    <td><code>POST</code></td>
-                    <td>/users</td>
-                    <td>Allow new users to register</td>
-                </tr>
-                <tr>
-                    <td><code>PUT</code></td>
-                    <td>/users/:id</td>
-                    <td>Allow users to update their user id</td>
-                </tr>
-                <tr style="background-color: #cbe896;">
-                    <td><code>POST</code></td>
-                    <td>/users/:id/:movieTitle</td>
-                    <td>Allow users to add a movie to their favorites</td>
-                </tr>
-                <tr>
-                    <td><code>DELETE</code></td>
-                    <td>/users/:id/:movieTitle</td>
-                    <td>Allow users to remove a movie from their favorites</td>
-                </tr>
-                <tr style="background-color: #cbe896;">
-                    <td><code>DELETE</code></td>
-                    <td>/users/:id</td>
-                    <td>Allow existing users to deregister</td>
-                </tr>
-            </tbody>
-        </table>
+    <div style="overflow-x:auto;">
+      <table
+        cellpadding="3"
+        cellspacing="0"
+        style="
+          border: 1px solid #87bba2;
+          margin: 0 auto;
+          text-align: left;
+          table-layout: auto;
+          width: 95%;
+        ">
+        <thead>
+          <tr>
+            <th>Business Logic</th>
+            <th>HTTP Method</th>
+            <th>URL Endpoints</th>
+            <th>Path Variables</th>
+            <th>Request Body Data Format</th>
+            <th>Response Body Data Format</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background-color: #c9e4ca">
+            <td>Return a list of all movies to the user</td>
+            <td><code>GET</code></td>
+            <td>/movies</td>
+            <td>None</td>
+            <td>None</td>
+            <td>A JSON object holding data about all movies.</td>
+          </tr>
+          <tr>
+            <td>
+              Return data (description, genre, director) about a single movie by
+              title to the user
+            </td>
+            <td><code>GET</code></td>
+            <td>/movies/:title</td>
+            <td>:title</td>
+            <td>None</td>
+            <td>A JSON object holding data about a single movie.</td>
+          </tr>
+          <tr style="background-color: #c9e4ca">
+            <td>A JSON object holding data about a single movie.</td>
+            <td><code>GET</code></td>
+            <td>/movies/genres/:genreType</td>
+            <td>:genreType</td>
+            <td>None</td>
+            <td>A JSON object holding data about a single genre.</td>
+          </tr>
+          <tr>
+            <td>
+              Return data about a director (bio, birth year, death year) by name
+            </td>
+            <td><code>GET</code></td>
+            <td>/movies/directors/:directorName</td>
+            <td>:directorName</td>
+            <td>None</td>
+            <td>A JSON object holding data about a single director.</td>
+          </tr>
+          <tr style="background-color: #c9e4ca">
+            <td>Allow new users to register</td>
+            <td><code>POST</code></td>
+            <td>/users</td>
+            <td>None</td>
+            <td>
+              A JSON object that requires the name of the new user. For example:
+              <br>
+              <code>{ "name": "Kim" }</code>
+            </td>
+            <td>
+              A JSON object holding data about the user. The object includes the
+              name specified in the request body and a user ID generated by the
+              <code>uuid.v4();</code>
+              function. For example:
+              <br>
+              <code>
+                { "name": "Kim", "id": "52a2eff2-83b6-4581-8baa-dd649667f827" }
+              </code>
+            </td>
+          </tr>
+          <tr>
+            <td>Allow users to update their name</td>
+            <td><code>PUT</code></td>
+            <td>/users/:id</td>
+            <td>:id</td>
+            <td>
+              A JSON object that requires the name of the user. For example:
+              <br>
+              <code>{ "name": "Jessica" }</code>
+            </td>
+            <td>
+              A JSON object holding data about the user. The change in name will
+              be reflected in the response. For example, assuming the users name
+              was previously Kim, then changed to Jessica:<br>
+              <code>
+                { name: "Jessica", "id": "52a2eff2-83b6-4581-8baa-dd649667f827",
+                "favoriteMovies": [] }
+              </code>
+            </td>
+          </tr>
+          <tr style="background-color: #c9e4ca">
+            <td>Allow users to add a movie to their favorites</td>
+            <td><code>POST</code></td>
+            <td>/users/:id/:movieTitle</td>
+            <td>
+              :id
+              <br>
+              :movieTitle
+            </td>
+            <td>None</td>
+            <td>
+              A string indicating that the movie title has been added to the
+              user’s favorites. For example:
+              <br>
+              <code>Inception has been added to Kim's favorites.</code>
+            </td>
+          </tr>
+          <tr>
+            <td>Allow users to remove a movie from their favorites</td>
+            <td><code>DELETE</code></td>
+            <td>/users/:id/:movieTitle</td>
+            <td>
+              :id
+              <br>
+              :movieTitle
+            </td>
+            <td>None</td>
+            <td>
+              A string indicating that the movie title has been removed from the
+              user’s favorites. For example:
+              <br>
+              <code>Inception has been removed from Kim's favorites.</code>
+            </td>
+          </tr>
+          <tr style="background-color: #c9e4ca">
+            <td>Allow existing users to deregister</td>
+            <td><code>DELETE</code></td>
+            <td>/users/:id</td>
+            <td>:id</td>
+            <td>None</td>
+            <td>
+              A string indicating that the user has been removed. Specifies the
+              name of the user. For example:
+              <br>
+              <code>Ben has been removed.</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div>
-    </div>
-</body>
-
+    <div></div>
+  </body>
 </html>

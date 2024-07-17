@@ -127,7 +127,7 @@ app.get('/movies/directors/:directorName', (req, res) => {
 app.post('/users', (req, res) => {
     const newUser = req.body;
     if (!newUser.name) {
-        res.status(400).send('User registration failed: Name is required.');
+        res.status(400).send('User registration failed. Name is required.');
     } else {
         newUser.id = uuid.v4(); // accesses the v4 property of the uuid module
         users.push(newUser);
@@ -139,12 +139,12 @@ app.post('/users', (req, res) => {
 app.put('/users/:id', (req, res) => {
     const { id } = req.params;
     const updatedUser = req.body;
-    let user = users.find(user => user.id == id); // array id number == url id string
+    let user = users.find(user => user.id == id); // ? array id number == url id string
     if (user) {
         user.name = updatedUser.name;
         res.status(200).json(user);
     } else {
-        res.status(404).send('User not found.');
+        res.status(404).send('Could not update user name. User not found.');
     }
 });
 
@@ -156,7 +156,7 @@ app.post('/users/:id/:movieTitle', (req, res) => {
         user.favoriteMovies.push(movieTitle);
         res.status(200).send(`${movieTitle} has been added to ${user.name}'s favorites.`);
     } else {
-        res.status(404).send('User not found.');
+        res.status(404).send('Could not add movie to favorites. User not found.');
     }
 });
 
@@ -168,7 +168,7 @@ app.delete('/users/:id/:movieTitle', (req, res) => {
         user.favoriteMovies = user.favoriteMovies.filter(title => title !== movieTitle);
         res.status(200).send(`${movieTitle} has been removed from ${user.name}'s favorites.`);
     } else {
-        res.status(404).send('User not found.');
+        res.status(404).send('Could not remove movie from favorites. User not found.');
     }
 });
 
@@ -178,9 +178,9 @@ app.delete('/users/:id', (req, res) => {
     let user = users.find(user => user.id == id);
     if (user) {
         users = users.filter(user => user.id != id);
-        res.status(200).send('User has been removed.');
+        res.status(200).send(`${user.name} has been removed.`);
     } else {
-        res.status(404).send('User not found.');
+        res.status(404).send('Could not remove user. User not found.');
     }
 });
 
