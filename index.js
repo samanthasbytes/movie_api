@@ -4,11 +4,18 @@ const express = require('express'),
   fs = require('fs'),
   path = require('path'),
   bodyParser = require('body-parser'),
-  uuid = require('uuid');
+  uuid = require('uuid'),
+  mongoose = require('mongoose'),
+  Models = require('./models.js');
+
+  const Movies = Models.Movie;
+  const Users = Models.User;
+
+  mongoose.connect('mongodb://localhost:27017/movieDB', { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(bodyParser.json());
 
-let movies = [
+/* let movies = [
   {
     Title: 'Inception',
     Description:
@@ -70,7 +77,7 @@ let users = [
     name: 'Ben',
     favoriteMovies: ['The Shawshank Redemption', 'The Godfather'],
   },
-];
+]; */
 
 // fs module creates a write stream, path to the log file is specified, flag 'a' stands for append (prevents overwriting)
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'log.txt'), {
