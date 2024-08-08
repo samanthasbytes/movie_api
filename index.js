@@ -4,80 +4,17 @@ const express = require('express'),
   fs = require('fs'),
   path = require('path'),
   bodyParser = require('body-parser'),
-  uuid = require('uuid'),
-  mongoose = require('mongoose'),
-  Models = require('./models.js');
+  uuid = require('uuid');
 
-  const Movies = Models.Movie;
-  const Users = Models.User;
+const mongoose = require('mongoose');
+mongoose.connect('mongodb://127.0.0.1:27017/movieDB');
 
-  mongoose.connect('mongodb://localhost:27017/movieDB', { useNewUrlParser: true, useUnifiedTopology: true });
+const Models = require('./models.js');
+const Movies = Models.Movie;
+const Users = Models.User;
 
 app.use(bodyParser.json());
-
-/* let movies = [
-  {
-    Title: 'Inception',
-    Description:
-      'A skilled thief is given a chance at redemption if he can successfully perform an inception.',
-    Genre: {
-      Type: 'Science Fiction',
-      Description:
-        'A genre dealing with imaginative and futuristic concepts such as advanced science and technology, space exploration, time travel, and extraterrestrial life.',
-    },
-    Director: {
-      Name: 'Christopher Nolan',
-      Bio: 'Christopher Nolan is a British-American film director, screenwriter, and producer known for his cerebral, often non-linear storytelling.',
-      Born: 1970,
-      Died: null,
-    },
-  },
-  {
-    Title: 'The Shawshank Redemption',
-    Description:
-      'Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.',
-    Genre: {
-      Type: 'Drama',
-      Description:
-        'A genre that relies on the emotional and relational development of realistic characters.',
-    },
-    Director: {
-      Name: 'Frank Darabont',
-      Bio: "Frank Darabont is a French-American film director, screenwriter, and producer known for his work on adaptations of Stephen King's works.",
-      Born: 1959,
-      Died: null,
-    },
-  },
-  {
-    Title: 'The Godfather',
-    Description:
-      'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.',
-    Genre: {
-      Type: 'Crime',
-      Description:
-        'A genre that revolves around the lives and actions of criminals and the justice system.',
-    },
-    Director: {
-      Name: 'Francis Ford Coppola',
-      Bio: 'Francis Ford Coppola is an American film director, producer, and screenwriter known for his work on The Godfather trilogy and Apocalypse Now.',
-      Born: 1939,
-      Died: null,
-    },
-  },
-];
-
-let users = [
-  {
-    id: 1,
-    name: 'Kim',
-    favoriteMovies: ['Inception'],
-  },
-  {
-    id: 2,
-    name: 'Ben',
-    favoriteMovies: ['The Shawshank Redemption', 'The Godfather'],
-  },
-]; */
+app.use(express.urlencoded({ extended: true }));
 
 // fs module creates a write stream, path to the log file is specified, flag 'a' stands for append (prevents overwriting)
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'log.txt'), {
@@ -89,116 +26,204 @@ app.use(morgan('combined', { stream: accessLogStream }));
 
 // root
 app.get('/', (req, res) => {
-  res.send('Movie API');
+  res.send('Movie API Homepage');
 });
 
-// return a list of all movies
-app.get('/movies', (req, res) => {
-  res.status(200).json(movies);
+// 1 get all movies - new
+app.get('/movies', async (req, res) => {
+  await Movies.find()
+    .then((movies) => {
+      res.status(201).json(movies);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
-// return data about a movie by title
-app.get('/movies/:title', (req, res) => {
-  const { title } = req.params; // object destructuring
-  const movie = movies.find((movie) => movie.Title === title);
-  if (movie) {
-    res.status(200).json(movie);
-  } else {
-    res.status(404).send('Movie not found.');
-  }
+// 2 get movie by title - new
+app.get('/movies/:Title', async (req, res) => {
+  await Movies.findOne({ Title: req.params.Title })
+    .then((movie) => {
+      res.json(movie);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
-// return data about a genre (description) by type
-app.get('/movies/genres/:genreType', (req, res) => {
-  const { genreType } = req.params;
-  const genre = movies.find((movie) => movie.Genre.Type === genreType).Genre;
-  if (genre) {
-    res.status(200).json(genre);
-  } else {
-    res.status(404).send('Genre not found.');
-  }
+// 3 get genre by name - new
+app.get('/movies/genres/:GenreName', async (req, res) => {
+  await Movies.find({ 'Genre.Name': req.params.GenreName })
+    .then((genre) => {
+      res.json(genre);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
-// return data about a director by name
-app.get('/movies/directors/:directorName', (req, res) => {
-  const { directorName } = req.params;
-  const director = movies.find(
-    (movie) => movie.Director.Name === directorName
-  ).Director;
-  if (director) {
-    res.status(200).json(director);
-  } else {
-    res.status(404).send('Director not found.');
-  }
+// 4 get director by name
+app.get('/movies/directors/:DirectorName', async (req, res) => {
+  await Movies.find({ 'Director.Name': req.params.DirectorName })
+    .then((director) => {
+      res.json(director);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error ' + err);
+    });
+})
+
+// 5 add a user - new
+/* expects JSON in this format
+{
+  "ID": Integer,
+  "Username": "String",
+  "Password": "String",
+  "Email": "String",
+  "Birthday": "Date"
+} */
+app.post('/users', async (req, res) => {
+  // attempt to find a user with the given username in the database
+  await Users.findOne({ Username: req.body.Username })
+    .then((user) => {
+      if (user) {
+        // if username is taken
+        return res.status(400).send(req.body.Username + ' already exists');
+      } else {
+        // if username is availible, creates a document
+        Users.create({
+          Username: req.body.Username,
+          Password: req.body.Password,
+          Email: req.body.Email,
+          Birthday: req.body.Birthday,
+        })
+          // takes the newly created document as a param, sends the created user data in the response
+          .then((user) => {
+            res.status(201).json(user);
+          })
+          // handles errors that occur during user creation
+          .catch((error) => {
+            console.error(error);
+            res.status(500).send('Error: ' + error);
+          });
+      }
+    })
+    // handles errors that occur as a result of Users.findOne
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send('Error: ' + error);
+    });
 });
 
-// allow new users to register
-app.post('/users', (req, res) => {
-  const newUser = req.body;
-  if (!newUser.name) {
-    res.status(400).send('User registration failed. Name is required.');
-  } else {
-    newUser.id = uuid.v4(); // accesses the v4 property of the uuid module
-    users.push(newUser);
-    res.status(201).json(newUser);
-  }
+// get all users - new
+app.get('/users', async (req, res) => {
+  await Users.find()
+    .then((users) => {
+      res.status(201).json(users);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
-// allow users to update their name
-app.put('/users/:id', (req, res) => {
-  const { id } = req.params;
-  const updatedUser = req.body;
-  let user = users.find((user) => user.id == id); // ? array id number == url id string
-  if (user) {
-    user.name = updatedUser.name;
-    res.status(200).json(user);
-  } else {
-    res.status(404).send('Could not update user name. User not found.');
-  }
+// get a user by username - new
+app.get('/users/:Username', async (req, res) => {
+  await Users.findOne({ Username: req.params.Username })
+    .then((user) => {
+      res.json(user);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
-// allow users to add a movie to their favorites
-app.post('/users/:id/:movieTitle', (req, res) => {
-  const { id, movieTitle } = req.params;
-  let user = users.find((user) => user.id == id);
-  if (user) {
-    user.favoriteMovies.push(movieTitle);
-    res
-      .status(200)
-      .send(`${movieTitle} has been added to ${user.name}'s favorites.`);
-  } else {
-    res.status(404).send('Could not add movie to favorites. User not found.');
-  }
+// 6 update user info - new
+/* TODO: come back to these comments after exercise 2.9
+FIXME: allows user to update username to one that already exists, creating multiple users with the same username
+FIXME: even worse, if you include password, email or any other information in the request body, it will update the first user that it finds with that username
+FIXME: exercise specifies that the response the username, password and email are required, however, it works if I just include a username, which makes sense because there is no code in place to require any other information */
+/* expects JSON in this format
+{
+  "Username": "String",
+  (required)
+  "Password": "String",
+  (required)
+  "Email": "String",
+  (required)
+  "Birthday": "Date"
+} */
+app.put('/users/:Username', async (req, res) => {
+  await Users.findOneAndUpdate(
+    { Username: req.params.Username },
+    {
+      $set: {
+        Username: req.body.Username,
+        Password: req.body.Password,
+        Email: req.body.Email,
+        Birthday: req.body.Birthday,
+      },
+    },
+    { new: true }
+  ) // ensures updated document is returned
+    .then((updatedUser) => {
+      res.json(updatedUser);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
-// allow users to remove a movie from their favorites
-app.delete('/users/:id/:movieTitle', (req, res) => {
-  const { id, movieTitle } = req.params;
-  let user = users.find((user) => user.id == id);
-  if (user) {
-    user.favoriteMovies = user.favoriteMovies.filter(
-      (title) => title !== movieTitle
-    );
-    res
-      .status(200)
-      .send(`${movieTitle} has been removed from ${user.name}'s favorites.`);
-  } else {
-    res
-      .status(404)
-      .send('Could not remove movie from favorites. User not found.');
-  }
+// 7 add movie to favorites - new
+app.post('/users/:Username/movies/:MovieID', async (req, res) => {
+  await Users.findOneAndUpdate({ Username: req.params.Username }, {
+    $push: { favoriteMovies: req.params.MovieID }
+  },
+    { new: true })
+    .then((updatedUser) => {
+      res.json(updatedUser);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
-// allow existing users to deregister
-app.delete('/users/:id', (req, res) => {
-  const { id } = req.params;
-  let user = users.find((user) => user.id == id);
-  if (user) {
-    users = users.filter((user) => user.id != id);
-    res.status(200).send(`${user.name} has been removed.`);
-  } else {
-    res.status(404).send('Could not remove user. User not found.');
-  }
+// 8 delete movie from favorites - new
+app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
+  await Users.findOneAndUpdate({ Username: req.params.Username }, {
+    $pull: { favoriteMovies: req.params.MovieID }
+  },
+    { new: true })
+    .then((updatedUser) => {
+      res.json(updatedUser);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
+
+// 9 delete user - new
+app.delete('/users/:Username', async (req, res) => {
+  await Users.findOneAndDelete({ Username: req.params.Username })
+    .then((user) => {
+      if (!user) {
+        res.status(400).send(req.params.Username + ' was not found.');
+      } else {
+        res.status(200).send(req.params.Username + ' was deleted.');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
 // uses express.static to serve the documentation file
