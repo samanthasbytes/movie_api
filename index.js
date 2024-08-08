@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
   res.send('Movie API Homepage');
 });
 
-// 1 get all movies - new
+// 1 get all movies
 app.get('/movies', async (req, res) => {
   await Movies.find()
     .then((movies) => {
@@ -41,7 +41,7 @@ app.get('/movies', async (req, res) => {
     });
 });
 
-// 2 get movie by title - new
+// 2 get movie by title
 app.get('/movies/:Title', async (req, res) => {
   await Movies.findOne({ Title: req.params.Title })
     .then((movie) => {
@@ -53,7 +53,7 @@ app.get('/movies/:Title', async (req, res) => {
     });
 });
 
-// 3 get genre by name - new
+// 3 get genre by name
 app.get('/movies/genres/:GenreName', async (req, res) => {
   await Movies.find({ 'Genre.Name': req.params.GenreName })
     .then((genre) => {
@@ -77,7 +77,7 @@ app.get('/movies/directors/:DirectorName', async (req, res) => {
     });
 })
 
-// 5 add a user - new
+// 5 add a user
 /* expects JSON in this format
 {
   "ID": Integer,
@@ -119,7 +119,7 @@ app.post('/users', async (req, res) => {
     });
 });
 
-// get all users - new
+// get all users
 app.get('/users', async (req, res) => {
   await Users.find()
     .then((users) => {
@@ -131,7 +131,7 @@ app.get('/users', async (req, res) => {
     });
 });
 
-// get a user by username - new
+// get a user by username
 app.get('/users/:Username', async (req, res) => {
   await Users.findOne({ Username: req.params.Username })
     .then((user) => {
@@ -143,7 +143,7 @@ app.get('/users/:Username', async (req, res) => {
     });
 });
 
-// 6 update user info - new
+// 6 update user info
 /* TODO: come back to these comments after exercise 2.9
 FIXME: allows user to update username to one that already exists, creating multiple users with the same username
 FIXME: even worse, if you include password, email or any other information in the request body, it will update the first user that it finds with that username
@@ -180,7 +180,7 @@ app.put('/users/:Username', async (req, res) => {
     });
 });
 
-// 7 add movie to favorites - new
+// 7 add movie to favorites
 app.post('/users/:Username/movies/:MovieID', async (req, res) => {
   await Users.findOneAndUpdate({ Username: req.params.Username }, {
     $push: { favoriteMovies: req.params.MovieID }
@@ -195,7 +195,7 @@ app.post('/users/:Username/movies/:MovieID', async (req, res) => {
     });
 });
 
-// 8 delete movie from favorites - new
+// 8 delete movie from favorites
 app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
   await Users.findOneAndUpdate({ Username: req.params.Username }, {
     $pull: { favoriteMovies: req.params.MovieID }
@@ -210,7 +210,7 @@ app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
     });
 });
 
-// 9 delete user - new
+// 9 delete user
 app.delete('/users/:Username', async (req, res) => {
   await Users.findOneAndDelete({ Username: req.params.Username })
     .then((user) => {
