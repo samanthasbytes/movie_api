@@ -1,36 +1,45 @@
-const express = require('express'),
-  app = express(),
-  morgan = require('morgan'),
-  fs = require('fs'),
-  path = require('path'),
-  bodyParser = require('body-parser'),
-  uuid = require('uuid');
-
+// imports
+const express = require('express');
+const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose');
+
+// initialize app
+const app = express();
+
+// db connection
 mongoose.connect('mongodb://127.0.0.1:27017/movieDB');
 
+// import models
 const Models = require('./models.js');
 const Movies = Models.Movie;
 const Users = Models.User;
 
-app.use(bodyParser.json());
+// parsing middleware
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// fs module creates a write stream, path to the log file is specified, flag 'a' stands for append (prevents overwriting)
+// authentication and passport setup
+let auth = require('./auth')(app);
+const passport = require('passport');
+require('./passport');
+
+// HTTP request log
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'log.txt'), {
   flags: 'a',
 });
 
-// uses morgan to log all requests
 app.use(morgan('combined', { stream: accessLogStream }));
 
-// root
+// ! ROUTE HANDLERS
+
 app.get('/', (req, res) => {
   res.send('Movie API Homepage');
 });
 
 // 1 get all movies
-app.get('/movies', async (req, res) => {
+app.get('/movies', passport.authenticate('jwt', { session: false }), async (req, res) => {
   await Movies.find()
     .then((movies) => {
       res.status(201).json(movies);
@@ -42,7 +51,7 @@ app.get('/movies', async (req, res) => {
 });
 
 // 2 get movie by title
-app.get('/movies/:Title', async (req, res) => {
+app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), async (req, res) => {
   await Movies.findOne({ Title: req.params.Title })
     .then((movie) => {
       res.json(movie);
@@ -54,7 +63,7 @@ app.get('/movies/:Title', async (req, res) => {
 });
 
 // 3 get genre by name
-app.get('/movies/genres/:GenreName', async (req, res) => {
+app.get('/movies/genres/:GenreName', passport.authenticate('jwt', { session: false }), async (req, res) => {
   await Movies.find({ 'Genre.Name': req.params.GenreName })
     .then((genre) => {
       res.json(genre);
@@ -66,7 +75,7 @@ app.get('/movies/genres/:GenreName', async (req, res) => {
 });
 
 // 4 get director by name
-app.get('/movies/directors/:DirectorName', async (req, res) => {
+app.get('/movies/directors/:DirectorName', passport.authenticate('jwt', { session: false }), async (req, res) => {
   await Movies.find({ 'Director.Name': req.params.DirectorName })
     .then((director) => {
       res.json(director);
@@ -80,11 +89,11 @@ app.get('/movies/directors/:DirectorName', async (req, res) => {
 // 5 add a user
 /* expects JSON in this format
 {
-  "ID": Integer,
-  "Username": "String",
-  "Password": "String",
-  "Email": "String",
-  "Birthday": "Date"
+  ID: Integer,
+  Username: String,
+  Password: String,
+  Email: String,
+  Birthday: Date
 } */
 app.post('/users', async (req, res) => {
   // attempt to find a user with the given username in the database
@@ -144,19 +153,19 @@ app.get('/users/:Username', async (req, res) => {
 });
 
 // 6 update user info
-/* TODO: come back to these comments after exercise 2.9
+/*
 FIXME: allows user to update username to one that already exists, creating multiple users with the same username
 FIXME: even worse, if you include password, email or any other information in the request body, it will update the first user that it finds with that username
 FIXME: exercise specifies that the response the username, password and email are required, however, it works if I just include a username, which makes sense because there is no code in place to require any other information */
 /* expects JSON in this format
 {
-  "Username": "String",
+  Username: String,
   (required)
-  "Password": "String",
+  Password: String,
   (required)
-  "Email": "String",
+  Email: String,
   (required)
-  "Birthday": "Date"
+  Birthday: Date
 } */
 app.put('/users/:Username', async (req, res) => {
   await Users.findOneAndUpdate(
@@ -229,7 +238,7 @@ app.delete('/users/:Username', async (req, res) => {
 // uses express.static to serve the documentation file
 app.use(express.static(path.join(__dirname, 'public')));
 
-// error handling function to log all app level errors to terminal, is placed last in the chain of middleware and after all instances of app.use and route calls, but before listener
+// Express error handling function, logs all app level errors to terminal, place last in chain of middleware and route handlers, before listener
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res
