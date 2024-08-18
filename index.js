@@ -22,11 +22,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // authentication and passport setup
 const cors = require('cors');
-let allowedOrigins = ['http://localhost:8080'];
+let allowedOrigins = ['*']; // bad practice
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) { // if origin is not found in the list of allowed origins
+    if (allowedOrigins.indexOf(origin) === -1) { // if origin is not found in the list of allowed origins (set up in case restricted access becomes necessary)
       let message = 'The CORS policy for this application does not allow access from origin ' + origin;
       return callback(new Error(message), false);
     }
@@ -44,16 +44,12 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, 'log.txt'), {
 
 app.use(morgan('combined', { stream: accessLogStream }));
 
-// ! ROUTE HANDLERS
-
 app.get('/', (req, res) => {
   res.send('Movie API Homepage');
 });
 
 // 1 get all movies
-app.get(
-  '/movies',
-  passport.authenticate('jwt', { session: false }),
+app.get('/movies', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.find()
       .then((movies) => {
@@ -67,9 +63,7 @@ app.get(
 );
 
 // 2 get movie by title
-app.get(
-  '/movies/:Title',
-  passport.authenticate('jwt', { session: false }),
+app.get('/movies/:Title', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.findOne({ Title: req.params.Title })
       .then((movie) => {
@@ -83,9 +77,7 @@ app.get(
 );
 
 // 3 get genre by name
-app.get(
-  '/movies/genres/:GenreName',
-  passport.authenticate('jwt', { session: false }),
+app.get('/movies/genres/:GenreName', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.find({ 'Genre.Name': req.params.GenreName })
       .then((genre) => {
@@ -99,9 +91,7 @@ app.get(
 );
 
 // 4 get director by name
-app.get(
-  '/movies/directors/:DirectorName',
-  passport.authenticate('jwt', { session: false }),
+app.get('/movies/directors/:DirectorName', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.find({ 'Director.Name': req.params.DirectorName })
       .then((director) => {
@@ -124,17 +114,15 @@ app.get(
   Birthday: Date
 } */
 app.post('/users', async (req, res) => {
-  // attempt to find a user with the given username in the database
+  let hashedPassword = Users.hashPassword(req.body.Password);
   await Users.findOne({ Username: req.body.Username })
     .then((user) => {
       if (user) {
-        // if username is taken
         return res.status(400).send(req.body.Username + ' already exists');
       } else {
-        // if username is availible, creates a document
         Users.create({
           Username: req.body.Username,
-          Password: req.body.Password,
+          Password: hashedPassword,
           Email: req.body.Email,
           Birthday: req.body.Birthday,
         })
@@ -197,6 +185,7 @@ FIXME: exercise specifies that the response the username, password and email are
 } */
 app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
+    let hashedPassword = Users.hashPassword(req.body.Password);
     if (req.user.Username !== req.params.Username) {
       return res.status(400).send('Permission denied');
     }
@@ -205,7 +194,7 @@ app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
       {
         $set: {
           Username: req.body.Username,
-          Password: req.body.Password,
+          Password: hashedPassword,
           Email: req.body.Email,
           Birthday: req.body.Birthday,
         },

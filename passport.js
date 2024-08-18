@@ -26,6 +26,11 @@ passport.use(
               message: 'Incorrect username or password.',
             });
           }
+          // along with the validatePassword method defined in models.js, hashes pw entered when logging in before comparing to pw stored in db
+          if (!user.validatePassword(password)) {
+            console.log('incorrect password');
+            return callback(null, false, { message: 'Incorrect password.' });
+          }
           console.log('finished');
           return callback(null, user);
         })
