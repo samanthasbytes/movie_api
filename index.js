@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+const { check, validationResult } = require('express-validator');
 
 // initialize app
 const app = express();
@@ -26,7 +27,7 @@ let allowedOrigins = ['*']; // bad practice
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) { // if origin is not found in the list of allowed origins (set up in case restricted access becomes necessary)
+    if (allowedOrigins.indexOf(origin) === -1) {
       let message = 'The CORS policy for this application does not allow access from origin ' + origin;
       return callback(new Error(message), false);
     }
@@ -104,87 +105,67 @@ app.get('/movies/directors/:DirectorName', passport.authenticate('jwt', { sessio
   }
 );
 
-// 5 add a user
-/* expects JSON in this format
-{
-  ID: Integer,
-  Username: String,
-  Password: String,
-  Email: String,
-  Birthday: Date
-} */
-app.post('/users', async (req, res) => {
-  let hashedPassword = Users.hashPassword(req.body.Password);
-  await Users.findOne({ Username: req.body.Username })
-    .then((user) => {
-      if (user) {
-        return res.status(400).send(req.body.Username + ' already exists');
-      } else {
-        Users.create({
-          Username: req.body.Username,
-          Password: hashedPassword,
-          Email: req.body.Email,
-          Birthday: req.body.Birthday,
-        })
-          // takes the newly created document as a param, sends the created user data in the response
-          .then((user) => {
-            res.status(201).json(user);
-          })
-          // handles errors that occur during user creation
-          .catch((error) => {
-            console.error(error);
-            res.status(500).send('Error: ' + error);
-          });
-      }
-    })
-    // handles errors that occur as a result of Users.findOne
-    .catch((error) => {
-      console.error(error);
-      res.status(500).send('Error: ' + error);
-    });
-});
-
-// get all users
-app.get('/users', async (req, res) => {
-  await Users.find()
-    .then((users) => {
-      res.status(201).json(users);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
-
-// get a user by username
-app.get('/users/:Username', async (req, res) => {
-  await Users.findOne({ Username: req.params.Username })
-    .then((user) => {
-      res.json(user);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
-
-// 6 update user info
-/*
-FIXME: allows user to update username to one that already exists, creating multiple users with the same username
-FIXME: even worse, if you include password, email or any other information in the request body, it will update the first user that it finds with that username
-FIXME: exercise specifies that the response the username, password and email are required, however, it works if I just include a username, which makes sense because there is no code in place to require any other information */
-/* expects JSON in this format
-{
-  Username: String,
-  (required)
-  Password: String,
-  (required)
-  Email: String,
-  (required)
-  Birthday: Date
-} */
-app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
+//  5 add a user
+app.post('/users',
+  // validation logic
+  [
+    check('Username', 'Username is required').isLength({ min: 5 }),
+    check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+  ],
   async (req, res) => {
+    // check validation object for errors
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+    let hashedPassword = Users.hashPassword(req.body.Password);
+    await Users.findOne({ Username: req.body.Username })
+      .then((user) => {
+        if (user) {
+          return res.status(400).send(req.body.Username + ' already exists');
+        } else {
+          Users.create({
+            Username: req.body.Username,
+            Password: hashedPassword,
+            Email: req.body.Email,
+            Birthday: req.body.Birthday,
+          })
+            // takes the newly created document as a param, sends the created user data in the response
+            .then((user) => {
+              res.status(201).json(user);
+            })
+            // handles errors that occur during user creation
+            .catch((error) => {
+              console.error(error);
+              res.status(500).send('Error: ' + error);
+            });
+        }
+      })
+      // handles errors that occur as a result of Users.findOne
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send('Error: ' + error);
+      });
+  });
+
+//  6 update user info
+/*
+  allows user to update username to one that already exists, creating multiple users with the same username; if you include a password, email or any other information in the request body, it will update the first user that it finds with that username
+*/
+app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
+  // validation logic
+  [
+    check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+  ],
+  async (req, res) => {
+    // check validation object for errors
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
     let hashedPassword = Users.hashPassword(req.body.Password);
     if (req.user.Username !== req.params.Username) {
       return res.status(400).send('Permission denied');
@@ -290,6 +271,7 @@ app.use((err, req, res, next) => {
 });
 
 // listen for requests
-app.listen(8080, () => {
-  console.log('Listening on port 8080');
+const port = process.env.PORT || 8080;
+app.listen(port, '0.0.0.0', () => {
+  console.log('Listening on port ' + port);
 });
