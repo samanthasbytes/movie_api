@@ -277,3 +277,6 @@ const port = process.env.PORT || 8080;
 app.listen(port, '0.0.0.0', () => {
   console.log('Listening on port ' + port);
 });
+
+
+// still receiving error from Heroku regarding morgan and updating npm, pushing to git to see if it fixes the issue...
