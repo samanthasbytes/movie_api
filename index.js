@@ -110,9 +110,10 @@ app.get('/movies/directors/:DirectorName', passport.authenticate('jwt', { sessio
 app.post('/users',
   // validation logic
   [
-    check('Username', 'Username is required').isLength({ min: 5 }),
+    check('Username', 'Username must be at least 5 characters long.').isLength({ min: 5 }),
     check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
     check('Password', 'Password is required').not().isEmpty(),
+    check('Password', 'Password must be at least 8 characters long.').isLength({ min: 8 }),
     check('Email', 'Email does not appear to be valid').isEmail(),
     check('Birthday', 'Invalid date. Enter a date in the format: MM/DD/YYYY.').isDate({ format: 'MM/DD/YYYY', strictMode: false })
   ],
@@ -159,7 +160,9 @@ app.post('/users',
 app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
   // validation logic
   [
+    check('Username', 'Username must be at least 5 characters long.').isLength({ min: 5 }),
     check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+    check('Password', 'Password must be at least 8 characters long.').isLength({ min: 8 }),
     check('Email', 'Email does not appear to be valid').isEmail(),
     check('Birthday', 'Invalid date. Enter a date in the format: MM/DD/YYYY.').isDate({ format: 'MM/DD/YYYY', strictMode: false })
   ],
