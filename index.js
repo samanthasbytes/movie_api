@@ -10,7 +10,8 @@ const { check, validationResult } = require('express-validator');
 const app = express();
 
 // db connection
-mongoose.connect('mongodb://127.0.0.1:27017/movieDB');
+// mongoose.connect('mongodb://127.0.0.1:27017/movieDB');
+mongoose.connect(process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // import models
 const Models = require('./models.js');
@@ -277,6 +278,3 @@ const port = process.env.PORT || 8080;
 app.listen(port, '0.0.0.0', () => {
   console.log('Listening on port ' + port);
 });
-
-
-// still receiving error from Heroku regarding morgan and updating npm, pushing to git to see if it fixes the issue...
