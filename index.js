@@ -105,7 +105,7 @@ app.post('/users',
     check('Password', 'Password is required').not().isEmpty(),
     check('Password', 'Password must be at least 8 characters long.').isLength({ min: 8 }),
     check('Email', 'Email does not appear to be valid').isEmail(),
-    check('Birthday', 'Invalid date. Enter a date in the format: MM/DD/YYYY.').isDate({ format: 'MM/DD/YYYY', strictMode: false })
+    check('Birthday', 'Invalid date.').isDate()
   ],
   async (req, res) => {
     // check validation object for errors
@@ -178,7 +178,7 @@ app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
     check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
     check('Password', 'Password must be at least 8 characters long.').isLength({ min: 8 }),
     check('Email', 'Email does not appear to be valid').isEmail(),
-    check('Birthday', 'Invalid date. Enter a date in the format: MM/DD/YYYY.').isDate({ format: 'MM/DD/YYYY', strictMode: false })
+    check('Birthday', 'Invalid date.').isDate()
   ],
   async (req, res) => {
     // check validation object for errors
